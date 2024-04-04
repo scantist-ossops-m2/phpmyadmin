@@ -69,6 +69,9 @@
  * @license   http://www.opensource.org/licenses/mit-license.html  MIT License
  * @link      http://phpseclib.sourceforge.net
  */
+if (! defined('PHPMYADMIN')) {
+    exit;
+}
 
 /**
  * Include Crypt_Base
