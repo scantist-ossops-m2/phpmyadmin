@@ -863,6 +863,8 @@ function PMA_isAllowedDomain($url)
         'www.drizzle.org',
         /* php.net domains */
         'php.net',
+        /* sourceforge.net domain */
+        'sourceforge.net',
         /* Github domains*/
         'github.com','www.github.com',
         /* Following are doubtful ones. */
