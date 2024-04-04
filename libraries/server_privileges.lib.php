@@ -3241,7 +3241,7 @@ function PMA_getUsersOverview($result, $db_rights, $pmaThemeImage, $text_dir)
         __('Export'), 'b_tblexport.png', 'export'
     );
     $html_output .= '<input type="hidden" name="initial" '
-        . 'value="' . (isset($_GET['initial']) ? $_GET['initial'] : '') . '" />';
+        . 'value="' . (isset($_GET['initial']) ? htmlspecialchars($_GET['initial']) : '') . '" />';
     $html_output .= '</div>'
         . '<div class="clear_both" style="clear:both"></div>';
 
@@ -3324,7 +3324,7 @@ function PMA_getHtmlTableBodyForUserRights($db_rights)
             if ($cfgRelation['menuswork']) {
                 $html_output .= '<td class="usrGroup">' . "\n"
                     . (isset($group_assignment[$host['User']])
-                        ? $group_assignment[$host['User']]
+                        ? htmlspecialchars($group_assignment[$host['User']])
                         : ''
                     )
                     . '</td>' . "\n";
