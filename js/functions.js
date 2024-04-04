@@ -220,6 +220,24 @@ function escapeHtml(unsafe) {
     }
 }
 
+function escapeJsString(unsafe) {
+    if (typeof(unsafe) != 'undefined') {
+        return unsafe
+            .toString()
+            .replace("\000", '')
+            .replace('\\', '\\\\')
+            .replace('\'', '\\\'')
+            .replace("&#039;", "\\\&#039;")
+            .replace('"', '\"')
+            .replace("&quot;", "\&quot;")
+            .replace("\n", '\n')
+            .replace("\r", '\r')
+            .replace(/<\/script/gi, '</\' + \'script')
+    } else {
+        return false;
+    }
+}
+
 function PMA_sprintf() {
     return sprintf.apply(this, arguments);
 }
@@ -298,14 +316,31 @@ function suggestPassword(passwd_form)
     // restrict the password to just letters and numbers to avoid problems:
     // "editors and viewers regard the password as multiple words and
     // things like double click no longer work"
-    var pwchars = "abcdefhjmnpqrstuvwxyz23456789ABCDEFGHJKLMNPQRSTUVWYXZ";
+    var pwchars = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWYXZ";
     var passwordlength = 16;    // do we want that to be dynamic?  no, keep it simple :)
     var passwd = passwd_form.generated_pw;
+    var randomWords = new Int32Array(passwordlength);
+
     passwd.value = '';
 
-    for (var i = 0; i < passwordlength; i++) {
-        passwd.value += pwchars.charAt(Math.floor(Math.random() * pwchars.length));
+    // First we're going to try to use a built-in CSPRNG
+    if (window.crypto && window.crypto.getRandomValues) {
+        window.crypto.getRandomValues(randomWords);
     }
+    // Because of course IE calls it msCrypto instead of being standard
+    else if (window.msCrypto && window.msCrypto.getRandomValues) {
+        window.msCrypto.getRandomValues(randomWords);
+    } else {
+        // Fallback to Math.random
+        for (var i = 0; i < passwordlength; i++) {
+            randomWords[i] = Math.floor(Math.random() * pwchars.length);
+        }
+    }
+
+    for (var i = 0; i < passwordlength; i++) {
+        passwd.value += pwchars.charAt(Math.abs(randomWords[i]) % pwchars.length);
+    }
+
     passwd_form.text_pma_pw.value = passwd.value;
     passwd_form.text_pma_pw2.value = passwd.value;
     return true;
@@ -1794,7 +1829,7 @@ AJAX.registerOnload('functions.js', function () {
         var $inner_sql = $(this).parent().prev().find('code.sql');
         var old_text   = $inner_sql.html();
 
-        var new_content = "<textarea name=\"sql_query_edit\" id=\"sql_query_edit\">" + sql_query + "</textarea>\n";
+        var new_content = "<textarea name=\"sql_query_edit\" id=\"sql_query_edit\">" + escapeHtml(sql_query) + "</textarea>\n";
         new_content    += getForeignKeyCheckboxLoader();
         new_content    += "<input type=\"submit\" id=\"sql_query_edit_save\" class=\"button btnSave\" value=\"" + PMA_messages.strGo + "\"/>\n";
         new_content    += "<input type=\"button\" id=\"sql_query_edit_discard\" class=\"button btnDiscard\" value=\"" + PMA_messages.strCancel + "\"/>\n";
