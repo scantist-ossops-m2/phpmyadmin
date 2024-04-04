@@ -606,7 +606,7 @@ function PMA_sendHeaderLocation($uri, $use_refresh = false)
         echo '<body>' . "\n";
         echo '<script type="text/javascript">' . "\n";
         echo '//<![CDATA[' . "\n";
-        echo 'document.write(\'<p><a href="' . htmlspecialchars($uri) . '">'
+        echo 'document.write(\'<p><a href="' . PMA_escapeJsString(htmlspecialchars($uri)) . '">'
             . __('Go') . '</a></p>\');' . "\n";
         echo '//]]>' . "\n";
         echo '</script></body></html>' . "\n";
@@ -856,6 +856,7 @@ function PMA_isAllowedDomain($url)
         $_SERVER['SERVER_NAME'],
         /* phpMyAdmin domains */
         'wiki.phpmyadmin.net', 'www.phpmyadmin.net', 'phpmyadmin.net',
+        'demo.phpmyadmin.net',
         'docs.phpmyadmin.net',
         /* mysql.com domains */
         'dev.mysql.com','bugs.mysql.com',
@@ -863,6 +864,8 @@ function PMA_isAllowedDomain($url)
         'www.drizzle.org',
         /* php.net domains */
         'php.net',
+        /* sourceforge.net domain */
+        'sourceforge.net',
         /* Github domains*/
         'github.com','www.github.com',
         /* Following are doubtful ones. */
@@ -1010,6 +1013,15 @@ function PMA_setGlobalDbOrTable($param)
         // only \ and / is not allowed in db names for MySQL
         $GLOBALS[$param] = $_REQUEST[$param];
         $GLOBALS['url_params'][$param] = $GLOBALS[$param];
+    }
+}
+
+/* Compatibility with PHP < 5.6 */
+if(! function_exists('hash_equals')) {
+    function hash_equals($a, $b) {
+        $ret = strlen($a) ^ strlen($b);
+        $ret |= array_sum(unpack("C*", $a ^ $b));
+        return ! $ret;
     }
 }
 ?>
